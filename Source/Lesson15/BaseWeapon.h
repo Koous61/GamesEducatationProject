@@ -5,7 +5,7 @@
 #include "BaseWeapon.generated.h"
 
 UCLASS()
-class LESSON15_API ABaseWeapon : public AActor
+class ABaseWeapon : public AActor
 {
 	GENERATED_BODY()
 

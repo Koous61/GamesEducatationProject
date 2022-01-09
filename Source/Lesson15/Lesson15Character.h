@@ -18,11 +18,17 @@ class ALesson15Character : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWeaponManagerComponent* WeaponManagerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UInventoryManagerComponent* InventoryManagerComponent;
 public:
 	ALesson15Character();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	float Health;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHealth;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -34,6 +40,12 @@ public:
 	void ApplyDamage(float Damage);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION(Client, Unreliable)
+	void AddHealthClient(float NewValue);
+
+	UFUNCTION(Server, Unreliable)
+	void AddHealthServer(float NewValue);
 
 	void OnSetWeapon(ABaseWeapon* NewWeapon = nullptr);
 

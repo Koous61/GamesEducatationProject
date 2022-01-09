@@ -7,7 +7,7 @@
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class LESSON15_API UWeaponManagerComponent : public UActorComponent
+class UWeaponManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

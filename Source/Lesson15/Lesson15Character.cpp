@@ -1,5 +1,6 @@
 #include "Lesson15Character.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "InventoryManagerComponent.h"
 #include "WeaponManagerComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -15,24 +16,25 @@ ALesson15Character::ALesson15Character()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
+	MaxHealth = 100.f;
 	Health = 100.0f;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->TargetArmLength = 300.0f;
+	CameraBoom->bUsePawnControlRotation = true;
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	FollowCamera->bUsePawnControlRotation = false;
 
 	WeaponManagerComponent = CreateDefaultSubobject<UWeaponManagerComponent>(TEXT("WeaponManager"));
+	InventoryManagerComponent = CreateDefaultSubobject<UInventoryManagerComponent>(TEXT("InventoryManager"));
 }
 
 void ALesson15Character::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -56,13 +58,7 @@ void ALesson15Character::SetupPlayerInputComponent(class UInputComponent* Player
 
 void ALesson15Character::ApplyDamage(float Damage)
 {
-	Health -= Damage;
-	if (Health < 0)
-	{
-		Health = 0;
-		RespawnCharacter();
-	}
-	UE_LOG(LogTemp, Warning, TEXT("%f"), Health);
+	AddHealthServer(-1 * Damage);
 }
 
 void ALesson15Character::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -70,6 +66,11 @@ void ALesson15Character::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALesson15Character, Health);
+}
+
+void ALesson15Character::AddHealthClient_Implementation(float NewValue)
+{
+	AddHealthServer(NewValue);
 }
 
 void ALesson15Character::OnResetVR()
@@ -85,6 +86,16 @@ void ALesson15Character::OnFire()
 void ALesson15Character::OnDropWeapon()
 {
 	OnDropWeaponServer();
+}
+
+void ALesson15Character::AddHealthServer_Implementation(float NewValue)
+{
+	Health += NewValue;
+	Health = FMath::Clamp(Health, 0.0f, MaxHealth);
+	if (FMath::IsNearlyEqual(Health, 0.0f))
+	{
+		RespawnCharacter();
+	}
 }
 
 void ALesson15Character::OnSetWeapon(ABaseWeapon* NewWeapon)

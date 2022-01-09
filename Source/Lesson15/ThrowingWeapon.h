@@ -9,7 +9,7 @@ DECLARE_DYNAMIC_DELEGATE(FInteractThrowingWeaponDynamic);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractThrowingWeaponMulticast);
 
 UCLASS()
-class LESSON15_API AThrowingWeapon : public ABaseWeapon
+class AThrowingWeapon : public ABaseWeapon
 {
 	GENERATED_BODY()
 
